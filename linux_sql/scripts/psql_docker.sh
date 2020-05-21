@@ -24,78 +24,76 @@ fi
 case $cmd in
 
     'stop')
-	    if [ $(sudo docker container ls -a -f name=$cnt_name | wc -l) -eq 2 ];
-	    then
-      #stop psql
-        sudo docker container stop $cnt_name
-        exit 0
-      else
-      # print message if container is not created
-		    echo "INFO: container does not exist, nothing to stop"
-		    exit 1
-	    fi
+	 if [ $(sudo docker container ls -a -f name=$cnt_name | wc -l) -eq 2 ];
+	 then
+	      	#stop psql
+       		 sudo docker container stop $cnt_name
+       		 exit 0
+     	 else
+     		 # print message if container is not created
+		 echo "INFO: container does not exist, nothing to stop"
+		 exit 1
+	 fi
 
-	    exit $?
+	 exit $?
       ;;
 
     'start')
-	    #start docker if docker server is not running
-	    sudo systemctl status docker || sudo systemctl start docker
+	 #start docker if docker server is not running
+	 sudo systemctl status docker || sudo systemctl start docker
+	 if [ $? -eq 0 ]; then
+		 echo "docker running"
+	 fi
 
-	    if [ $? -eq 0 ]; then
-		    echo "docker running"
-	    fi
-
-	    if [ $(sudo docker container ls -a -f name=$cnt_name | wc -l) -ne 2 ]; then
-	      #print error message if container is not created
-		    echo "ERROR: container does not exist, use create command"
-		    exit 1
-	    fi
+	 if [ $(sudo docker container ls -a -f name=$cnt_name | wc -l) -ne 2 ]; then
+		 #print error message if container is not created
+		 echo "ERROR: container does not exist, use create command"
+		 exit 1
+	 fi
  
-	    #start psql
-	    sudo docker container start $cnt_name
+	 #start psql
+	 sudo docker container start $cnt_name
 
-	     if [ $? -eq 0 ]; then
-	      echo "docker container started"
-       fi
+	 if [ $? -eq 0 ]; then
+		 echo "docker container started"
+	 fi
 
-       exit $?
+	 exit $?
        ;;
 
     'create')
-	    #check container exists
-	    if [ $(sudo docker container ls -a -f name=$cnt_name | wc -l) -eq 2 ]; then
-		    echo "ERROR: container $cnt_name already exists"
-		    exit 1
-	    fi
+	 #check container exists
+	 if [ $(sudo docker container ls -a -f name=$cnt_name | wc -l) -eq 2 ]; then
+		 echo "ERROR: container $cnt_name already exists"
+		 exit 1
+	 fi
 
-      if [[ ! $user ]] || [[ ! $pass ]]; then
-        echo "ERROR: enter both user and password"
-        echo "INFO: run $scr_run ? for usage"
-        exit 1
-      fi
+	 if [[ ! $user ]] || [[ ! $pass ]]; then
+		 echo "ERROR: enter both user and password"
+		 echo "INFO: run $scr_run ? for usage"
+	 exit 1
+	 fi
 
-      sudo docker volume create $vol_name
-      sudo docker run --name $cnt_name -e POSTGRES_PASSWORD=$pass -e POSTGRES_USER=$user -d -v $vol_path -p $cnt_ports postgres
+	 sudo docker volume create $vol_name
+	 sudo docker run --name $cnt_name -e POSTGRES_PASSWORD=$pass -e POSTGRES_USER=$user -d -v $vol_path -p $cnt_ports postgres
 
-      exit $?
-      ;;
+	 exit $?
+	 ;;
 
     '?') #help
-      echo "start | stop | create [username] [password]"
-      echo "start = starts docker if it is not running and the psql docker container"
-      echo "stop = stops the psql docker container"
-      echo "create = create a psql docker container with the given username and password."
-      exit 0
-      ;;
+	 echo "start | stop | create [username] [password]"
+	 echo "start = starts docker if it is not running and the psql docker container"
+	 echo "stop = stops the psql docker container"
+	 echo "create = create a psql docker container with the given username and password."
+     
+	 exit 0
+     	 ;;
 
-    *)
-
-	    #wrong command
-	    echo "ERROR: $cmd is not a recognized command"
-	    echo "INFO: run $scr_run ? for usage"
-	    exit 1
-      ;;
+    *)  #wrong command
+	 echo "ERROR: $cmd is not a recognized command"
+	 echo "INFO: run $scr_run ? for usage"
+	 exit 1
+     	 ;;
 esac
 
 exit 0
